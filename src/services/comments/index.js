@@ -59,7 +59,6 @@ commentRouter.put("/:postId/:commentId", async (req, res, next) => {
         },
       }
     );
-    console.log(comments, "Comments FOund IN POST MODEL SCHEMA");
     const oldComment = comments[0];
     const modifiedComment = { ...oldComment, ...req.body };
     await PostModel.findOneAndUpdate(

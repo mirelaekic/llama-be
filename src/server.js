@@ -8,6 +8,8 @@ const {authorize} = require("./services/auth/middleware")
 const usersRouter = require("./services/users");
 const postsRouter = require("./services/posts")
 const commentsRouter = require("./services/comments")
+const likeRouter = require("./services/likes")
+const commentLikeRouter = require("./services/commentLike")
 
 require("dotenv/config");
 const {
@@ -43,6 +45,8 @@ server.use(cookieParser())
 server.use("/users", usersRouter)
 server.use("/posts",authorize, postsRouter)
 server.use("/comments", authorize, commentsRouter)
+server.use("/like", authorize, likeRouter)
+server.use("/commentLike", authorize, commentLikeRouter)
 
 server.use(badRequestHandler)
 server.use(forbiddenHandler)

@@ -66,11 +66,6 @@ postRouter.post(
   }
 );
 
-// route to get liked posts 
-// route to like/dislike posts
-// route to like comments
-//  route to get all the posts from me
-
 postRouter.get("/me", async (req, res, next) => {
   try {
     const user = req.user._id;
