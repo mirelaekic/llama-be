@@ -11,8 +11,6 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
-    // profile Pic
-    //
     email: {
       type: String,
       required: true,
@@ -25,8 +23,18 @@ const UserSchema = new Schema(
     imgUrl: String,
     age: Number,
     city: String,
-    following: [],
-    followers: [],
+    following: [
+      {user:{
+        type:Schema.ObjectId,
+        ref:"user"
+      }}
+    ],
+    followers: [
+      {user:{
+        type:Schema.ObjectId,
+        ref:"user"
+      }}
+    ],
     posts: [],
     likedPosts: [],
     refreshTokens: [

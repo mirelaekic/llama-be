@@ -6,7 +6,7 @@ const cloudinary = require("../cloudinary");
 const { authenticate, refresh } = require("../auth/tools");
 const { authorize } = require("../auth/middleware");
 const UserModel = require("./schema");
-
+const mongoose = require("mongoose");
 
 const userRouter = express.Router();
 
@@ -66,7 +66,7 @@ userRouter.post("/register", async (req, res, next) => {
 });
 
 userRouter.get("/me", authorize, async (req, res, next) => {
-  try { 
+  try {
     const user = req.user;
     res.send(user);
   } catch (error) {
@@ -94,18 +94,27 @@ userRouter.put("/me", authorize, async (req, res, next) => {
   }
 });
 
-userRouter.put("/me/profilePic", authorize,cloudinaryMulter.single("image"), async (req, res, next) => {
+userRouter.put(
+  "/me/profilePic",
+  authorize,
+  cloudinaryMulter.single("image"),
+  async (req, res, next) => {
     try {
-    const user = req.user._id
-    console.log(user)
-    console.log(req.file.path,"imagepath")
-    await UserModel.findByIdAndUpdate({_id: user},{imgUrl: req.file.path},{useFindAndModify:true,new:true,upsert:true})
+      const user = req.user._id;
+      console.log(user);
+      console.log(req.file.path, "imagepath");
+      await UserModel.findByIdAndUpdate(
+        { _id: user },
+        { imgUrl: req.file.path },
+        { useFindAndModify: true, new: true, upsert: true }
+      );
       await req.user.save();
       res.send(req.user);
     } catch (error) {
       next(error);
     }
-  });
+  }
+);
 
 userRouter.delete("/me", authorize, async (req, res, next) => {
   try {
@@ -161,6 +170,58 @@ userRouter.post("/login", async (req, res, next) => {
 //       res.redirect('/');
 //     });
 //   });
+
+//ADD TO FOLLOWING ARRAY
+//then after adding the user to follow, go to the user Profile and create a new Follower
+userRouter.post("/follow/:user_id", authorize, (req, res) => {
+  if (req.user.id === req.params.user_id) {
+    return res.status(400).json({ alreadyfollow : "You cannot follow yourself"})
+} 
+UserModel.findById(req.params.user_id)
+    .then(user => {
+        console.log(user,"USER ")
+        //filtering followers from the user sending req to follow, checking if it matches with the u
+        const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
+        console.log(filteredUser,"WHAT USER is being filtered")
+        if(filteredUser.length > 0){  
+            return res.status(400).json({ alreadyfollow : "You already followed the user"})
+        }
+        // if the user is not followed, we add the follower  
+        user.followers.unshift({user:req.user.id});
+        user.save()
+        UserModel.findOne({ email: req.user.email })
+            .then(user => {
+                console.log(user,"when adding new user this is the action")
+                user.following.unshift({user:req.params.user_id});
+                user.save().then(user => res.json(user))
+            })
+            .catch(err => res.status(404).json({alradyfollow:"you already followed the user"}))
+    })
+});
+userRouter.post("/unfollow/:user_id", authorize, (req, res) => {
+  if (req.user.id === req.params.user_id) {
+    return res.status(400).json({ alreadyfollow : "You cannot ufollow yourself"})
+} 
+UserModel.findById(req.params.user_id)
+    .then(user => {
+        console.log(user,"USER ")
+        const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
+        if(filteredUser.length > 0){  
+        return filteredUser.shift()// res.status(400).json({ alreadyfollow : "You already followed the user"})
+        }
+        // if the user is not followed, we remove the follower 
+
+       // user.followers.unshift({user:req.user.id});
+       // user.save()
+        UserModel.findOne({ email: req.user.email })
+            .then(user => {
+                console.log(user,"when adding new user this is the action")
+                user.following.shift({user:req.params.user_id});
+                user.save().then(user => res.json(user))
+            })
+            .catch(err => res.status(404).json({alradyfollow:"you already followed the user"}))
+    })
+});
 
 userRouter.get("/refreshToken", async (req, res, next) => {
   try {

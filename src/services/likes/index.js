@@ -8,12 +8,14 @@ const likeRouter = express.Router();
 
 likeRouter.post("/:postId", async (req, res, next) => {
   try {
-      // find the post with the postId
-    const like = await LikeModel.find({ postId: req.params.postId ,user:req.user._id});
-    console.log(like,"if like found")
-    
-  if (like[0] === undefined)  {
-    const like = new LikeModel({
+    // find the post with the postId
+    const like = await LikeModel.find({
+      postId: req.params.postId,
+      user: req.user._id,
+    });
+
+    if (like[0] === undefined) {
+      const like = new LikeModel({
         postId: req.params.postId,
         like: true,
         user: req.user._id,
@@ -28,10 +30,8 @@ likeRouter.post("/:postId", async (req, res, next) => {
       await like.save();
       res.send(post);
     } else {
-       console.log("you have to dislike")
-    const like = await LikeModel.findOneAndDelete({ user: req.user._id });
-    console.log(like,"LIKE")
-    const removeFromPost = await PostModel.findByIdAndUpdate(
+      const like = await LikeModel.findOneAndDelete({ user: req.user._id });
+      const removeFromPost = await PostModel.findByIdAndUpdate(
         req.params.postId,
         {
           $pull: { likes: { _id: mongoose.Types.ObjectId(like._id) } },
@@ -41,7 +41,7 @@ likeRouter.post("/:postId", async (req, res, next) => {
           new: true,
         }
       );
-      res.send(removeFromPost.likes); 
+      res.send(removeFromPost.likes);
     }
   } catch (error) {
     next(error);
@@ -49,12 +49,12 @@ likeRouter.post("/:postId", async (req, res, next) => {
 });
 
 likeRouter.get("/:postId", async (req, res, next) => {
-    try {
-        const likes = await LikeModel.find({ postId: req.params.postId});
-        res.send(likes)
-    } catch (error) {
-        next(error)
-    }
+  try {
+    const likes = await LikeModel.find({ postId: req.params.postId });
+    res.send(likes);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = likeRouter;
