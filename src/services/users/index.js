@@ -180,10 +180,17 @@ userRouter.post("/follow/:user_id", authorize, (req, res) => {
 UserModel.findById(req.params.user_id)
     .then(user => {
         console.log(user,"USER ")
-        //filtering followers from the user sending req to follow, checking if it matches with the u
+        //filtering followers from the user that is receiving the req to be followed, 
+        //checking if it matches with the user sending req. if it matches,that means that 
+        // the user sending req. already exists in array of followers of the user wed like to follow 
+        // and that means we cant follow again
+        // we have to create a function to remove the user from the followers array
+
+        //checking if the user sending the req. is already in the followers array of the user we want to follow
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
-        console.log(filteredUser,"WHAT USER is being filtered")
-        if(filteredUser.length > 0){  
+        console.log(filteredUser,"req.user")
+        if(filteredUser.length > 0){  // if the length is greater than 0, that means that the req.user is twice in the array 
+                                      // it should not be allowed to follow same user twice!  
             return res.status(400).json({ alreadyfollow : "You already followed the user"})
         }
         // if the user is not followed, we add the follower  
@@ -206,20 +213,22 @@ UserModel.findById(req.params.user_id)
     .then(user => {
         console.log(user,"USER ")
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
-        if(filteredUser.length > 0){  
-        return filteredUser.shift()// res.status(400).json({ alreadyfollow : "You already followed the user"})
+        console.log(filteredUser[0], "FOllowers")
+        if(filteredUser.length > 1){  
+        const removeFollower = filteredUser.shift()
+        return res.status(400).json(removeFollower)
         }
         // if the user is not followed, we remove the follower 
 
-       // user.followers.unshift({user:req.user.id});
-       // user.save()
+       user.followers.shift({user:req.user.id});
+       user.save()
         UserModel.findOne({ email: req.user.email })
             .then(user => {
                 console.log(user,"when adding new user this is the action")
                 user.following.shift({user:req.params.user_id});
                 user.save().then(user => res.json(user))
             })
-            .catch(err => res.status(404).json({alradyfollow:"you already followed the user"}))
+            .catch(err => res.status(404).json({alradyfollow:"you already unfollowed the user"}))
     })
 });
 
