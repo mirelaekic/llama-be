@@ -213,7 +213,7 @@ UserModel.findById(req.params.user_id)
     .then(user => {
         console.log(user,"USER ")
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
-        console.log(filteredUser[0], "FOllowers")
+        console.log(filteredUser[0], "Followers")
         if(filteredUser.length > 1){  
         const removeFollower = filteredUser.shift()
         return res.status(400).json(removeFollower)
