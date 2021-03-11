@@ -3,6 +3,7 @@ const cors = require("cors");
 const {join} = require("path");
 const listEndpoints = require("express-list-endpoints");
 const mongoose = require("mongoose");
+const http = require("http")
 const cookieParser = require("cookie-parser");
 const {authorize} = require("./services/auth/middleware")
 const usersRouter = require("./services/users");
@@ -10,8 +11,11 @@ const postsRouter = require("./services/posts")
 const commentsRouter = require("./services/comments")
 const likeRouter = require("./services/likes")
 const commentLikeRouter = require("./services/commentLike")
-
+const messageRouter = require("./services/messages")
 require("dotenv/config");
+
+const createSocketServer = require("./socket")
+
 const {
     notFoundHandler,
     forbiddenHandler,
@@ -20,23 +24,8 @@ const {
   } = require("./errorHandlers")
 
 const server = express();
-
-const io = require('socket.io')(5000)
-
-io.on('connection', socket => {
-  const id = socket.handshake.query.id
-  socket.join(id)
-
-  socket.on('send-message', ({ recipients, text }) => {
-    recipients.forEach(recipient => {
-      const newRecipients = recipients.filter(r => r !== recipient)
-      newRecipients.push(id)
-      socket.broadcast.to(recipient).emit('receive-message', {
-        recipients: newRecipients, sender: id, text
-      })
-    })
-  })
-})
+const httpServer = http.createServer(server)
+createSocketServer(httpServer)
 // const whitelist = ["http://localhost:3000","http://localhost:3001","http://localhost:3012"]
 // const corsOptions = {
 //   origin: (origin, callback) => {
@@ -63,6 +52,8 @@ server.use("/posts",authorize, postsRouter)
 server.use("/comments", authorize, commentsRouter)
 server.use("/like", authorize, likeRouter)
 server.use("/commentLike", authorize, commentLikeRouter)
+server.use("/messages",messageRouter)
+
 
 server.use(badRequestHandler)
 server.use(forbiddenHandler)
@@ -78,7 +69,7 @@ mongoose
     useCreateIndex: true,
   })
   .then(
-    server.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log("Running on port", port)
     })
   )

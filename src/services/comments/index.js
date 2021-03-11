@@ -30,15 +30,8 @@ commentRouter.post("/:postId", async (req, res, next) => {
       userId: req.user._id,
       postId: req.params.postId,
     });
-    const upload = await PostModel.findByIdAndUpdate(
-      req.params.postId,
-      {
-        $push: { comments: newComment },
-      },
-      { runValidators: true, new: true }
-    );
     const { _id } = await newComment.save();
-    res.status(201).send(upload.comments);
+    res.status(201).send(_id);
   } catch (error) {
     next(error);
   }
@@ -47,30 +40,11 @@ commentRouter.post("/:postId", async (req, res, next) => {
 commentRouter.put("/:postId/:commentId", async (req, res, next) => {
   try {
     const comment = await CommentModel.findOneAndUpdate(
-      { _id: req.params.commentId },
+      { _id: req.params.commentId, userId: req.user._id},
       { ...req.body },
       { findOneAndUpdate: true }
     );
-    const { comments } = await PostModel.findOne(
-      { _id: mongoose.Types.ObjectId(req.params.postId) },
-      {
-        comments: {
-          $elemMatch: { _id: mongoose.Types.ObjectId(req.params.commentId) },
-        },
-      }
-    );
-    const oldComment = comments[0];
-    const modifiedComment = { ...oldComment, ...req.body };
-    await PostModel.findOneAndUpdate(
-      {
-        _id: mongoose.Types.ObjectId(req.params.postId),
-        "comments._id": mongoose.Types.ObjectId(req.params.commentId),
-      },
-      {
-        $set: { "comments.$": modifiedComment },
-      },
-      { findOneAndUpdate: true }
-    );
+    console.log(comment,"COMMENT")
     const saved = await comment.save();
     res.send(saved);
   } catch (error) {
@@ -80,20 +54,10 @@ commentRouter.put("/:postId/:commentId", async (req, res, next) => {
 // only delete comments that user has written DONE
 commentRouter.delete("/:postId/:commentId", async (req, res, next) => {
   try {
-    const comment = await CommentModel.findByIdAndDelete(req.params.commentId);
-    const removeFromPost = await PostModel.findByIdAndUpdate(
-      req.params.postId,
-      {
-        $pull: {
-          comments: { _id: mongoose.Types.ObjectId(req.params.commentId) },
-        },
-      },
-      {
-        runValidators: true,
-        new: true,
-      }
-    );
-    res.send(removeFromPost.comments);
+    const userID = req.user._id === userId
+    const comment = await CommentModel.findOneAndDelete(req.params.commentId,req.params.postId,{userId:userID});
+    console.log(comment,"COMMENT TO DELETE")
+    res.send(comment);
   } catch (error) {
     next(error);
   }

@@ -35,8 +35,8 @@ const UserSchema = new Schema(
         ref:"user"
       }}
     ],
-    posts: [],
-    likedPosts: [],
+    // posts: [],
+    // likedPosts: [],
     refreshTokens: [
         {
           token: {
