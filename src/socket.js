@@ -1,5 +1,5 @@
 const socketio = require("socket.io")
-
+// GET ALL ROOMS THEN FILTER THEM BY THE CURRENT USERS ID 
 const {
   addUserToRoom,
   getUsersInRoom,

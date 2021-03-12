@@ -21,7 +21,7 @@ const generateAccessToken = (payload) =>
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: "7d" },
+      { expiresIn: "1m" },
       (err, token) => {
         if (err) rej(err);
         res(token);
@@ -88,4 +88,12 @@ const refresh = async (oldRefreshToken) => {
   }
 };
 
-module.exports = { authenticate, verifyAccessToken, refresh };
+const removeToken = async (res) => {
+  try {
+    res.cookie("accessToken", "", { expires: new Date(0) });
+    res.cookie("refreshToken", "", { expires: new Date(0) });
+  } catch (error) {
+    console.log(error)
+  }
+}
+module.exports = { authenticate, verifyAccessToken, refresh, removeToken };

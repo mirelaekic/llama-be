@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../cloudinary");
-const { authenticate, refresh } = require("../auth/tools");
+const { authenticate, refresh, removeToken } = require("../auth/tools");
 const { authorize } = require("../auth/middleware");
 const UserModel = require("./schema");
 const mongoose = require("mongoose");
@@ -97,7 +97,7 @@ userRouter.put("/me", authorize, async (req, res, next) => {
 userRouter.put(
   "/me/profilePic",
   authorize,
-  cloudinaryMulter.single("image"),
+  cloudinaryMulter.single("avatar"),
   async (req, res, next) => {
     try {
       const user = req.user._id;
@@ -135,41 +135,39 @@ userRouter.post("/login", async (req, res, next) => {
 
     //Send back tokens
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
+      httpOnly: true, //secure:true, sameSite:'none'
       path: "/",
     });
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
+     httpOnly: true,//secure:true, sameSite:'none',
       path: "/users/refreshToken",
     });
-
-    res.send("Ok");
+    
+    res.send({accessToken,refreshToken}).redirect("http://localhost:3000/")
   } catch (error) {
     console.log(error);
     next(error);
   }
 });
 
-// userRouter.post("/logout", authorize, async (req, res, next) => {
-//   try {
-//     req.user.refreshTokens = req.user.refreshTokens.filter(
-//       (t) => t.token !== req.body.refreshToken
-//     );
-//     await req.user.save();
-//     res.send();
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+ userRouter.post("/logout", authorize, async (req, res, next) => {
+   try {
+     const clear = await removeToken(res)
+     console.log(clear,"CLEAR")
+     res.redirect("http://localhost:3000/login")
+   } catch (err) {
+     next(err);
+   }
+ });
 // userRouter.get('/logout', function (req, res) {
-//     req.logOut();
-//     res.status(200).clearCookie('connect.sid', {
-//       path: '/'
+//      req.logOut();
+//      res.status(200).clearCookie('connect.sid', {
+//        path: '/'
+//      });
+//      req.session.destroy(function (err) {
+//         res.redirect('/');
 //     });
-//     req.session.destroy(function (err) {
-//       res.redirect('/');
-//     });
-//   });
+//    });
 
 //ADD TO FOLLOWING ARRAY
 //then after adding the user to follow, go to the user Profile and create a new Follower
