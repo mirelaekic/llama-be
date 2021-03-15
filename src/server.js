@@ -4,7 +4,11 @@ const { join } = require("path");
 const listEndpoints = require("express-list-endpoints");
 const mongoose = require("mongoose");
 const http = require("http");
+const passport = require("passport")
 const cookieParser = require("cookie-parser");
+
+require("./services/auth/oauth")
+
 const { authorize } = require("./services/auth/middleware");
 const usersRouter = require("./services/users");
 const postsRouter = require("./services/posts");
@@ -12,9 +16,8 @@ const commentsRouter = require("./services/comments");
 const likeRouter = require("./services/likes");
 const commentLikeRouter = require("./services/commentLike");
 const messageRouter = require("./services/messages");
-require("dotenv/config");
 
-const createSocketServer = require("./socket");
+require("dotenv/config");
 
 const {
   notFoundHandler,
@@ -23,11 +26,11 @@ const {
   genericErrorHandler,
 } = require("./errorHandlers");
 
+const createSocketServer = require("./socket");
 const server = express();
 const httpServer = http.createServer(server);
 createSocketServer(httpServer);
-const port = process.env.PORT;
-const staticFolderPath = join(__dirname, "../public");
+
 const whitelist = ["http://localhost:3000","http://localhost:3000/login","http://localhost:3000/"]
 const corsOptions = {
   origin: (origin, callback) => {
@@ -42,9 +45,14 @@ const corsOptions = {
   
 server.use(cors(corsOptions));
 
+const port = process.env.PORT;
+const staticFolderPath = join(__dirname, "../public");
+
 server.use(express.static(staticFolderPath));
 server.use(express.json());
 server.use(cookieParser());
+server.use(passport.initialize());
+server.use(passport.session());
 
 server.use("/users", usersRouter);
 server.use("/posts", authorize, postsRouter);

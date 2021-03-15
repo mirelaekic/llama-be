@@ -5,9 +5,9 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../cloudinary");
 const { authenticate, refresh, removeToken } = require("../auth/tools");
 const { authorize } = require("../auth/middleware");
+const passport = require("passport")
 const UserModel = require("./schema");
 const mongoose = require("mongoose");
-
 const userRouter = express.Router();
 
 const storage = new CloudinaryStorage({
@@ -126,24 +126,20 @@ userRouter.delete("/me", authorize, async (req, res, next) => {
 
 userRouter.post("/login", async (req, res, next) => {
   try {
-    //Check credentials
     const { email, password } = req.body;
 
     const user = await UserModel.findByCredentials(email, password);
-    //Generate token
     const { accessToken, refreshToken } = await authenticate(user);
-
-    //Send back tokens
+    console.log(refreshToken,"refresh token")
     res.cookie("accessToken", accessToken, {
-      httpOnly: true, //secure:true, sameSite:'none'
+      httpOnly: true, //secure:false,// sameSite:'none'
       path: "/",
     });
     res.cookie("refreshToken", refreshToken, {
-     httpOnly: true,//secure:true, sameSite:'none',
-      path: "/users/refreshToken",
+     httpOnly: true,// secure:false, //sameSite:'none',
+      path: "/",
     });
-    
-    res.send({accessToken,refreshToken}).redirect("http://localhost:3000/")
+    res.send({accessToken,refreshToken})
   } catch (error) {
     console.log(error);
     next(error);
@@ -159,18 +155,8 @@ userRouter.post("/login", async (req, res, next) => {
      next(err);
    }
  });
-// userRouter.get('/logout', function (req, res) {
-//      req.logOut();
-//      res.status(200).clearCookie('connect.sid', {
-//        path: '/'
-//      });
-//      req.session.destroy(function (err) {
-//         res.redirect('/');
-//     });
-//    });
 
-//ADD TO FOLLOWING ARRAY
-//then after adding the user to follow, go to the user Profile and create a new Follower
+//FOLLOW USER
 userRouter.post("/follow/:user_id", authorize, (req, res) => {
   if (req.user.id === req.params.user_id) {
     return res.status(400).json({ alreadyfollow : "You cannot follow yourself"})
@@ -178,20 +164,11 @@ userRouter.post("/follow/:user_id", authorize, (req, res) => {
 UserModel.findById(req.params.user_id)
     .then(user => {
         console.log(user,"USER ")
-        //filtering followers from the user that is receiving the req to be followed, 
-        //checking if it matches with the user sending req. if it matches,that means that 
-        // the user sending req. already exists in array of followers of the user wed like to follow 
-        // and that means we cant follow again
-        // we have to create a function to remove the user from the followers array
-
-        //checking if the user sending the req. is already in the followers array of the user we want to follow
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
         console.log(filteredUser,"req.user")
-        if(filteredUser.length > 0){  // if the length is greater than 0, that means that the req.user is twice in the array 
-                                      // it should not be allowed to follow same user twice!  
+        if(filteredUser.length > 0){   
             return res.status(400).json({ alreadyfollow : "You already followed the user"})
-        }
-        // if the user is not followed, we add the follower  
+        } 
         user.followers.unshift({user:req.user.id});
         user.save()
         UserModel.findOne({ email: req.user.email })
@@ -203,21 +180,18 @@ UserModel.findById(req.params.user_id)
             .catch(err => res.status(404).json({alradyfollow:"you already followed the user"}))
     })
 });
+//UNFOLLOW USER
 userRouter.post("/unfollow/:user_id", authorize, (req, res) => {
   if (req.user.id === req.params.user_id) {
     return res.status(400).json({ alreadyfollow : "You cannot ufollow yourself"})
 } 
 UserModel.findById(req.params.user_id)
     .then(user => {
-        console.log(user,"USER ")
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
-        console.log(filteredUser[0], "Followers")
         if(filteredUser.length > 1){  
         const removeFollower = filteredUser.shift()
         return res.status(400).json(removeFollower)
         }
-        // if the user is not followed, we remove the follower 
-
        user.followers.shift({user:req.user.id});
        user.save()
         UserModel.findOne({ email: req.user.email })
@@ -230,25 +204,53 @@ UserModel.findById(req.params.user_id)
     })
 });
 
-userRouter.get("/refreshToken", async (req, res, next) => {
+userRouter.post("/refreshToken", async (req, res, next) => {
   try {
-    // Grab the refresh token
-
-    console.log(req.cookies);
     const oldRefreshToken = req.cookies.refreshToken;
-
-    // Verify the token
-
-    // If it's ok generate new access token and new refresh token
-
-    const { accessToken, refreshToken } = await refresh(oldRefreshToken);
-
-    // send them back
-
-    res.send({ accessToken, refreshToken });
+    if(oldRefreshToken) {
+      console.log(oldRefreshToken,"OLD TOKEN")
+      const { accessToken, refreshToken } = await refresh(oldRefreshToken);
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true, //secure:false, // sameSite:'none'
+        path: "/",
+      });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true, //secure:false,// sameSite:'none',
+        path: "/",
+      });
+      res.send({refreshToken, accessToken})
+    } else {
+      res.send("please log in again")
+    }
+    
   } catch (error) {
     next(error);
   }
 });
+
+userRouter.get(
+  "/googleLogin",
+  passport.authenticate("google", { scope: ["profile", "email"] },console.log("GOOGLE LOGIN"))
+)
+
+userRouter.get(
+  "/googleRedirect",
+  passport.authenticate("google"),
+  async (req, res, next) => {
+    try {
+      res.cookie("accessToken", req.user.tokens.accessToken, {
+        httpOnly: true,
+      })
+      res.cookie("refreshToken", req.user.tokens.refreshToken, {
+        httpOnly: true,
+        path: "/",
+      })
+
+      res.status(200).redirect("http://localhost:3000/")
+    } catch (error) {
+      next(error)
+    }
+  }
+)
 
 module.exports = userRouter;

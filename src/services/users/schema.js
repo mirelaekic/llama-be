@@ -20,6 +20,7 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    googleId:String,
     imgUrl: String,
     age: Number,
     city: String,
@@ -35,8 +36,6 @@ const UserSchema = new Schema(
         ref:"user"
       }}
     ],
-    // posts: [],
-    // likedPosts: [],
     refreshTokens: [
         {
           token: {

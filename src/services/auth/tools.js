@@ -7,8 +7,9 @@ const authenticate = async (user) => {
     const refreshToken = await generateRefreshToken({ _id: user._id });
 
     user.refreshTokens = user.refreshTokens.concat({ token: refreshToken });
-    await user.save();
 
+    await user.save();
+    console.log(user,"THE USER SHOULD HAVE NEW TOKENS IN DB")
     return { accessToken, refreshToken };
   } catch (error) {
     console.log(error);
@@ -21,7 +22,7 @@ const generateAccessToken = (payload) =>
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: "1m" },
+      { expiresIn: "15m" },
       (err, token) => {
         if (err) rej(err);
         res(token);
@@ -48,7 +49,7 @@ const generateRefreshToken = (payload) =>
         res(token);
       }
     )
-  );
+  );  
 
 const verifyRefreshToken = (token) =>
   new Promise((res, rej) =>
@@ -60,26 +61,29 @@ const verifyRefreshToken = (token) =>
 
 const refresh = async (oldRefreshToken) => {
   try {
+    console.log(oldRefreshToken,"old token")
     const decoded = await verifyRefreshToken(oldRefreshToken); //  decoded._id
-
+    console.log(decoded,"decoding it")
     const user = await UserModel.findOne({ _id: decoded._id });
-
+    console.log(user,"If we can find it in the user DB")
     const currentRefreshToken = user.refreshTokens.find(
       (token) => token.token === oldRefreshToken
     );
-
+      console.log(currentRefreshToken,"THE token we have now")
     if (!currentRefreshToken) {
       throw new Error("Bad refresh token provided!");
     }
 
     const newAccessToken = await generateAccessToken({ _id: user._id });
     const newRefreshToken = await generateRefreshToken({ _id: user._id });
-
+    console.log(newAccessToken,"NEW ACCESS TOKEN")
+    console.log(newRefreshToken,"NEW REFRESH TOKEN")
     const newRefreshTokensList = user.refreshTokens
       .filter((token) => token.token !== oldRefreshToken)
       .concat({ token: newRefreshToken });
-
+    console.log(newRefreshTokensList,"LIST OF TOKENS")
     user.refreshTokens = [...newRefreshTokensList];
+
     await user.save();
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
@@ -90,8 +94,9 @@ const refresh = async (oldRefreshToken) => {
 
 const removeToken = async (res) => {
   try {
-    res.cookie("accessToken", "", { expires: new Date(0) });
-    res.cookie("refreshToken", "", { expires: new Date(0) });
+    console.log(res.cookie("refreshToken"),"THE RESPONSE")
+    res.clearCookie("accessToken")
+    res.clearCookie("refreshToken")
   } catch (error) {
     console.log(error)
   }
