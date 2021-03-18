@@ -27,6 +27,7 @@ commentRouter.post("/:postId", async (req, res, next) => {
       userId: req.user._id,
       postId: req.params.postId,
     });
+    console.log(newComment,"The comment to post")
     const { _id } = await newComment.save();
     res.status(201).send(_id);
   } catch (error) {

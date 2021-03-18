@@ -36,7 +36,7 @@ postRouter.get("/me", async (req, res, next) => {
 
 postRouter.post(
   "/me",
-  cloudinaryMulter.single("postImage"),
+  cloudinaryMulter.single("image"),
   async (req, res, next) => {
     try {
       const uid = req.user;
@@ -45,9 +45,11 @@ postRouter.post(
         postImg: req.file ? req.file.path : "",
         userId: uid._id,
       });
+      console.log(post,"THE NEW POST")
       const { _id } = await post.save();
       res.status(201).send(_id);
     } catch (error) {
+      console.log(error,"the")
       next(error);
     }
   }

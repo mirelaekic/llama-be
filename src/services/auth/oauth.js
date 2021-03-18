@@ -3,7 +3,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const UserModel = require("../users/schema");
 const { authenticate } = require("./tools");
 
-
 passport.use(
   "google",
   new GoogleStrategy(
@@ -13,7 +12,8 @@ passport.use(
       callbackURL: "http://localhost:9010/users/googleRedirect",
     },
     async (request, accessToken, refreshToken, profile, next) => {
-        console.log(accessToken,"TOKEN")
+      console.log(accessToken,"TOKEN")
+      
       const newUser = {
         googleId: profile.id,
         name: profile.name.givenName,

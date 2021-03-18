@@ -150,7 +150,7 @@ userRouter.post("/login", async (req, res, next) => {
    try {
      const clear = await removeToken(res)
      console.log(clear,"CLEAR")
-     res.redirect("http://localhost:3000/login")
+     res.send("logged out")
    } catch (err) {
      next(err);
    }
@@ -206,8 +206,12 @@ UserModel.findById(req.params.user_id)
 
 userRouter.post("/refreshToken", async (req, res, next) => {
   try {
-    const oldRefreshToken = req.cookies.refreshToken;
-    if(oldRefreshToken) {
+    const cookies = req.cookies.refreshToken;
+    console.log(cookies,"cookies")
+    if(cookies === undefined) {
+      res.status(404).json("please log in again")
+    } else {
+      const oldRefreshToken = req.cookies.refreshToken;
       console.log(oldRefreshToken,"OLD TOKEN")
       const { accessToken, refreshToken } = await refresh(oldRefreshToken);
       res.cookie("accessToken", accessToken, {
@@ -219,10 +223,7 @@ userRouter.post("/refreshToken", async (req, res, next) => {
         path: "/",
       });
       res.send({refreshToken, accessToken})
-    } else {
-      res.send("please log in again")
     }
-    
   } catch (error) {
     next(error);
   }
