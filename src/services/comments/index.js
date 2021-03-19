@@ -1,6 +1,14 @@
 const express = require("express");
 const CommentModel = require("./schema");
 const commentRouter = express.Router();
+commentRouter.get("/", async (req, res, next) => {
+  try {
+    const comments = await CommentModel.find();
+    res.send(comments);
+  } catch (error) {
+    next(error);
+  }
+});
 
 commentRouter.get("/:postId", async (req, res, next) => {
   try {
@@ -29,7 +37,7 @@ commentRouter.post("/:postId", async (req, res, next) => {
     });
     console.log(newComment,"The comment to post")
     const { _id } = await newComment.save();
-    res.status(201).send(_id);
+    res.status(201).send(newComment);
   } catch (error) {
     next(error);
   }
