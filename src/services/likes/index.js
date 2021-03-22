@@ -20,34 +20,24 @@ likeRouter.post("/:postId", async (req, res, next) => {
         like: true,
         user: req.user._id,
       });
-      const post = await PostModel.findByIdAndUpdate(
-        req.params.postId,
-        {
-          $push: { likes: like },
-        },
-        { runValidators: true, new: true }
-      );
       await like.save();
-      res.send(post);
+      res.send(like);
     } else {
-      const like = await LikeModel.findOneAndDelete({ user: req.user._id });
-      const removeFromPost = await PostModel.findByIdAndUpdate(
-        req.params.postId,
-        {
-          $pull: { likes: { _id: mongoose.Types.ObjectId(like._id) } },
-        },
-        {
-          runValidators: true,
-          new: true,
-        }
-      );
-      res.send(removeFromPost.likes);
+      const like = await LikeModel.findOneAndDelete({ user: req.user._id, postId:req.params.postId });
+      res.send(like);
     }
   } catch (error) {
     next(error);
   }
 });
-
+likeRouter.get("/", async (req, res, next) => {
+  try {
+    const likes = await LikeModel.find();
+    res.send(likes);
+  } catch (error) {
+    next(error);
+  }
+});
 likeRouter.get("/:postId", async (req, res, next) => {
   try {
     const likes = await LikeModel.find({ postId: req.params.postId });
