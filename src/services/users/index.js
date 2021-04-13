@@ -306,7 +306,7 @@ userRouter.get(
         path: "/",
       })
 
-      res.status(200).redirect("http://localhost:3000/")
+      res.status(200).redirect("https://thelama.netlify.app/")
     } catch (error) {
       next(error)
     }

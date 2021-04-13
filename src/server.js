@@ -32,7 +32,7 @@ const server = express();
 const httpServer = http.createServer(server);
 createSocketServer(httpServer);
 
-const whitelist = ["http://localhost:3000","http://localhost:3000/login","http://localhost:3000/"]
+const whitelist = ["http://localhost:3000","http://localhost:3000/login","http://localhost:3000/","https://thelama.netlify.app/"]
 const corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
