@@ -42,7 +42,22 @@ const createSocketServer = server => {
         console.log(error)
       }
     }) // joining chat room
-
+    socket.on('notification',async (data) => {
+      try {
+        console.log(data,"the data")
+        const notificationMessage = {
+          sender:data.sender,
+          text: `invited you to ${data.place} at ${data.time}`
+        }
+        console.log(notificationMessage,"the notif msg")
+        data.users.map((u) => {
+          return io.to(u).emit("notification",notificationMessage)
+        })
+        
+      } catch (error) {
+        console.log(error)
+      }
+  });
     socket.on("sendMessage", async ({ room, message,userId }) => {
       // when a client sends a message
         //console.log(socket.id,"THIS ID USER SHOULD MATCH FROM SEND MESSSAGE")
@@ -63,7 +78,6 @@ const createSocketServer = server => {
       // send the message to all the people in that room
       io.to(room).emit("message", messageContent)
     })
-
     socket.on("leaveRoom", async ({ room }) => {
       // when a client leaves chat room
 

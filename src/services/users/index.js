@@ -9,6 +9,8 @@ const passport = require("passport")
 const UserModel = require("./schema");
 const mongoose = require("mongoose");
 const userRouter = express.Router();
+const fetch = require('node-fetch');
+const userModel = require("./schema");
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -27,6 +29,43 @@ userRouter.get("/", authorize, async (req, res, next) => {
     next(error);
   }
 });
+userRouter.post("/places",authorize,async (req, res, next) => {
+  try {
+    const { lat, long, type } = req.body;
+    console.log(type,"the type")
+    const places = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=${process.env.GOOGLE_KEY}&location=${lat},${long}&radius=5000&type=${type}`,{method:"GET"})
+    if(places.ok){
+      const data = await places.json()
+      res.send(data)
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+userRouter.get("/place/photo/:refPhoto",authorize,async (req, res, next) => {
+  try {
+    const photo = await fetch(`https://maps.googleapis.com/maps/api/place/photo?maxwidth=960&photoreference=${req.params.refPhoto}&key=${process.env.GOOGLE_KEY}`,{method:"GET"})
+    if(photo.ok){
+      const toObj ={url:photo.url.toString(),photo_ref:req.params.refPhoto.toString()}
+      console.log(toObj,"pic to object")
+       res.send(toObj)
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+userRouter.get("/place/:placeId",authorize,async (req, res, next) => {
+  try {
+    const details = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${req.params.placeId}&key=${process.env.GOOGLE_KEY}`,{method:"GET"})
+    if(details.ok){
+      const det = await details.json()
+      console.log(det.results,"the single details")
+       res.send(det)
+    }
+  } catch (error) {
+    next(error)
+  }
+})
 
 userRouter.post("/register", async (req, res, next) => {
   try {
@@ -93,7 +132,6 @@ userRouter.put("/me", authorize, async (req, res, next) => {
     next(error);
   }
 });
-
 userRouter.put(
   "/me/profilePic",
   authorize,
@@ -106,6 +144,27 @@ userRouter.put(
       await UserModel.findByIdAndUpdate(
         { _id: user },
         { imgUrl: req.file.path },
+        { useFindAndModify: true, new: true, upsert: true }
+      );
+      await req.user.save();
+      res.send(req.user);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+userRouter.put(
+  "/me/profileCover",
+  authorize,
+  cloudinaryMulter.single("cover"),
+  async (req, res, next) => {
+    try {
+      const user = req.user._id;
+      console.log(user);
+      console.log(req.file.path, "imagepath");
+      await UserModel.findByIdAndUpdate(
+        { _id: user },
+        { profileCover: req.file.path },
         { useFindAndModify: true, new: true, upsert: true }
       );
       await req.user.save();
@@ -145,7 +204,6 @@ userRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
-
  userRouter.post("/logout", authorize, async (req, res, next) => {
    try {
      const clear = await removeToken(res)
@@ -163,7 +221,8 @@ userRouter.post("/follow/:user_id", authorize, (req, res) => {
 } 
 UserModel.findById(req.params.user_id)
     .then(user => {
-        console.log(user,"USER ")
+        console.log(user,"USER that I would like to follow")
+        
         const filteredUser = user.followers.filter(follower => follower.user.toString() === req.user.id)
         console.log(filteredUser,"req.user")
         if(filteredUser.length > 0){   
@@ -193,7 +252,7 @@ UserModel.findById(req.params.user_id)
         return res.status(400).json(removeFollower)
         }
        user.followers.shift({user:req.user.id});
-       user.save()
+       user.save()  
         UserModel.findOne({ email: req.user.email })
             .then(user => {
                 console.log(user,"when adding new user this is the action")
@@ -253,5 +312,7 @@ userRouter.get(
     }
   }
 )
+
+
 
 module.exports = userRouter;

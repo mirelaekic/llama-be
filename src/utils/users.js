@@ -16,14 +16,19 @@ const addUserToRoom = async ({ username, userId, room }) => {
     } else {
         // const newRoom = await new RoomModel({name:room})
         // console.log(newRoom.name,"NAME of the new room")
+        // check if the user is already in the room if not then add to the room
+          const findMembers = await RoomModel.findOne({name:room,"members.userId" : userId})
+          console.log(findMembers,"the members and room are matchign")
+      // //     if(findMembers){
 
-          const addUserToExisting = await RoomModel.findOneAndUpdate(
-        { name:room },
-        {
-          $addToSet: { members: { username: username, userId: userId } },
-        }
-      );
-        console.log(addUserToExisting,"ADD USER IF THE ROOM EXISTS")
+      // //     }
+      // //     const addUserToExisting = await RoomModel.findOneAndUpdate(
+      // //   { name:room },
+      // //   {
+      // //     $addToSet: { members: { username: username, userId: userId } },
+      // //   }
+      // // );
+      // //   console.log(addUserToExisting,"ADD USER IF THE ROOM EXISTS")
 }        
     return { username, room };
   } catch (error) {

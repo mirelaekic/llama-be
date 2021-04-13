@@ -22,8 +22,16 @@ const UserSchema = new Schema(
     },
     googleId:String,
     imgUrl: String,
+    profileCover:String,
     age: Number,
-    city: String,
+    country: String,
+    city:String,
+    about:String,
+    favourites:[{
+      placeId:String,
+      photoRef:String,
+      placeName:String
+    }],
     following: [
       {user:{
         type:Schema.ObjectId,

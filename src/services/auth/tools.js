@@ -9,7 +9,6 @@ const authenticate = async (user) => {
     user.refreshTokens = user.refreshTokens.concat({ token: refreshToken });
 
     await user.save();
-    console.log(user,"THE USER SHOULD HAVE NEW TOKENS IN DB")
     return { accessToken, refreshToken };
   } catch (error) {
     console.log(error);
@@ -61,15 +60,12 @@ const verifyRefreshToken = (token) =>
 
 const refresh = async (oldRefreshToken) => {
   try {
-    console.log(oldRefreshToken,"old token")
     const decoded = await verifyRefreshToken(oldRefreshToken); //  decoded._id
-    console.log(decoded,"decoding it")
     const user = await UserModel.findOne({ _id: decoded._id });
-    console.log(user,"If we can find it in the user DB")
     const currentRefreshToken = user.refreshTokens.find(
       (token) => token.token === oldRefreshToken
     );
-      console.log(currentRefreshToken,"THE token we have now")
+
     if (!currentRefreshToken) {
       throw new Error("Bad refresh token provided!");
     }

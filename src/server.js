@@ -16,6 +16,7 @@ const commentsRouter = require("./services/comments");
 const likeRouter = require("./services/likes");
 const commentLikeRouter = require("./services/commentLike");
 const messageRouter = require("./services/messages");
+const roomRouter = require("./services/rooms")
 
 require("dotenv/config");
 
@@ -59,7 +60,8 @@ server.use("/posts", authorize, postsRouter);
 server.use("/comments", authorize, commentsRouter);
 server.use("/like", authorize, likeRouter);
 server.use("/commentLike", authorize, commentLikeRouter);
-server.use("/messages", messageRouter);
+server.use("/messages",authorize, messageRouter);
+server.use("/rooms",authorize, roomRouter)
 
 server.use(badRequestHandler);
 server.use(forbiddenHandler);

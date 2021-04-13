@@ -1,6 +1,7 @@
 const express = require("express");
 const CommentModel = require("./schema");
 const commentRouter = express.Router();
+
 commentRouter.get("/", async (req, res, next) => {
   try {
     const comments = await CommentModel.find();
