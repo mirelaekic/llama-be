@@ -31,8 +31,8 @@ const {
 const server = express();
 // const httpServer = http.createServer(server);
 // createSocketServer(httpServer);
-server.set("trust proxy", 1);
-server.enable("trust proxy");
+// server.set("trust proxy", 1);
+// server.enable("trust proxy");
 server.use(express.json());
 // server.use(
 //   cors({
@@ -43,7 +43,7 @@ server.use(express.json());
 //     exposedHeaders: ["set-cookie"],
 //   })
 // );
-server.use(cors({credentials: true, origin: process.env.FE_URL}));
+server.use(cors());
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
 
