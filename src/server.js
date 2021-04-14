@@ -40,7 +40,6 @@ server.use(
       `${process.env.FE_URL}`,
       "http://localhost:3000/",
     ],
-    credentials: true,
     exposedHeaders: ["set-cookie"],
   })
 );
