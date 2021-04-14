@@ -20,7 +20,7 @@ const generateAccessToken = (payload) =>
   new Promise((res, rej) =>
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "642a7c4d7c59b6c0cdbb41bfe70b925eed339470cf5beff24efb698d6d1e08f4ddbcda34465d84e2f2b2038cf5dbe7a871966d7fd36e981869b5f64564dc553d",
       { expiresIn: "15m" },
       (err, token) => {
         if (err) rej(err);
@@ -41,7 +41,7 @@ const generateRefreshToken = (payload) =>
   new Promise((res, rej) =>
     jwt.sign(
       payload,
-      process.env.REFRESH_TOKEN_SECRET,
+      process.env.REFRESH_TOKEN_SECRET || "ab0519108994b3c8b631627aa2166f583ef069881e224273b32e1de7d076c0398caf6a98a017db953eea4ccf71ef58e8fb37b6c949b20eb8e482555fef9af8c7",
       { expiresIn: "1 week" },
       (err, token) => {
         if (err) rej(err);
