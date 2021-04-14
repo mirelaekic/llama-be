@@ -31,21 +31,19 @@ const {
 const server = express();
 // const httpServer = http.createServer(server);
 // createSocketServer(httpServer);
-
-const whitelist = ["http://localhost:3000","http://localhost:3000/login","http://localhost:3000/","https://thelama.netlify.app/"]
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true)
-    } else {
-         callback(new Error("Not allowed by CORS"))
-        }
-   },
-   credentials: true,
-  }
-  
-server.use(cors(corsOptions));
-
+server.set("trust proxy", 1);
+server.enable("trust proxy");
+server.use(express.json());
+server.use(
+  cors({
+    origin: [
+      `${process.env.FE_URL}`,
+      "http://localhost:3000/",
+    ],
+    credentials: true,
+    exposedHeaders: ["set-cookie"],
+  })
+);
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
 
