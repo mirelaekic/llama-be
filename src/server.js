@@ -45,7 +45,7 @@ const server = express();
 
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
-const whiteList = [process.env.FE_URL, "http://localhost:3000"];
+const whiteList = [process.env.FE_URL,"https://llamafe-2.vercel.app/","https://llamafe-2.vercel.app", "http://localhost:3000"];
 server.use(
   cors({
     origin: whiteList,
