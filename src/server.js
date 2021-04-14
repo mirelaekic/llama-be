@@ -43,7 +43,7 @@ server.use(express.json());
 //     exposedHeaders: ["set-cookie"],
 //   })
 // );
-server.use(cors());
+server.use(cors({credentials: true, origin: process.env.FE_URL}));
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
 
