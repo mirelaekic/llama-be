@@ -33,7 +33,6 @@ const server = express();
 // createSocketServer(httpServer);
 // server.set("trust proxy", 1);
 // server.enable("trust proxy");
-server.use(express.json());
 // server.use(
 //   cors({
 //     origin: [
@@ -41,17 +40,18 @@ server.use(express.json());
 //       "http://localhost:3000/",
 //     ],
 //     exposedHeaders: ["set-cookie"],
-//   })
+//   }) 
 // );
-server.use(cors({credentials: true, origin: process.env.FE_URL}));
-server.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
- next();
-});
+
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
-
+const whiteList = [process.env.FE_URL, "http://localhost:3000"];
+server.use(
+  cors({
+    origin: whiteList,
+    credentials: true,
+  })
+);
 server.use(express.static(staticFolderPath));
 server.use(express.json());
 server.use(cookieParser());
