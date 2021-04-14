@@ -31,8 +31,8 @@ const {
 const server = express();
 // const httpServer = http.createServer(server);
 // createSocketServer(httpServer);
-// server.set("trust proxy", 1);
-// server.enable("trust proxy");
+server.set("trust proxy", 1);
+server.enable("trust proxy");
 // server.use(
 //   cors({
 //     origin: [
@@ -50,6 +50,7 @@ server.use(
   cors({
     origin: whiteList,
     credentials: true,
+    exposedHeaders: ["set-cookie"],
   })
 );
 server.use(express.static(staticFolderPath));
