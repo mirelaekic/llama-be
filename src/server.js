@@ -34,15 +34,15 @@ const server = express();
 server.set("trust proxy", 1);
 server.enable("trust proxy");
 server.use(express.json());
-server.use(
-  cors({
-    origin: [
-      `${process.env.FE_URL}`,
-      "http://localhost:3000/",
-    ],
-    exposedHeaders: ["set-cookie"],
-  })
-);
+// server.use(
+//   cors({
+//     origin: [
+//       `${process.env.FE_URL}`,
+//       "http://localhost:3000/",
+//     ],
+//     exposedHeaders: ["set-cookie"],
+//   })
+// );
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
 
