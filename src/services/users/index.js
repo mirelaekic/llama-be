@@ -197,7 +197,7 @@ userRouter.post("/login", async (req, res, next) => {
      httpOnly: true,// secure:false, //sameSite:'none',
       path: "/",
     });
-    res.send({accessToken,refreshToken})
+    res.send("success")
   } catch (error) {
     console.log(error);
     next(error);
