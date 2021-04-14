@@ -10,7 +10,6 @@ const UserModel = require("./schema");
 const mongoose = require("mongoose");
 const userRouter = express.Router();
 const fetch = require('node-fetch');
-const userModel = require("./schema");
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,

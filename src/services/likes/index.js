@@ -1,7 +1,7 @@
 const express = require("express");
 const LikeModel = require("./schema");
 const likeRouter = express.Router();
-const userModel = require("../users/schema");
+const UserModel = require("../users/schema");
 const { authorize } = require("../auth/middleware");
 //GET FAVORITE ARRAY
 likeRouter.get("/favorite",(req,res,next) => {
@@ -56,7 +56,7 @@ likeRouter.get("/:postId", async (req, res, next) => {
 
 // ADD PLACE TO FAV
 likeRouter.post("/favourite/:cityId/", (req, res, next) => {
-  userModel.findById(req.user.id)
+  UserModel.findById(req.user.id)
   .then(user => {
     const findFav = user.favourites.find((fav) => fav.placeId === req.params.cityId)
     if(findFav){
@@ -69,7 +69,7 @@ likeRouter.post("/favourite/:cityId/", (req, res, next) => {
 })
 // REMOVE PlACE FROM FAV
 likeRouter.post("/removeFav/:cityId", (req, res, next) => {
-  userModel.findById(req.user.id)
+  UserModel.findById(req.user.id)
   .then(user => {
     const filterArr = user.favourites.filter(fav => fav.placeId === req.params.cityId)
     const index = user.favourites.map((fav) => {

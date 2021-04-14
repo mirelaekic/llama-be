@@ -3,7 +3,7 @@ const cors = require("cors");
 const { join } = require("path");
 const listEndpoints = require("express-list-endpoints");
 const mongoose = require("mongoose");
-const http = require("http");
+//const http = require("http");
 const passport = require("passport")
 const cookieParser = require("cookie-parser");
 
@@ -15,8 +15,8 @@ const postsRouter = require("./services/posts");
 const commentsRouter = require("./services/comments");
 const likeRouter = require("./services/likes");
 const commentLikeRouter = require("./services/commentLike");
-const messageRouter = require("./services/messages");
-const roomRouter = require("./services/rooms")
+//const messageRouter = require("./services/messages");
+//const roomRouter = require("./services/rooms")
 
 require("dotenv/config");
 
@@ -27,10 +27,10 @@ const {
   genericErrorHandler,
 } = require("./errorHandlers");
 
-const createSocketServer = require("./socket");
+//const createSocketServer = require("./socket");
 const server = express();
-const httpServer = http.createServer(server);
-createSocketServer(httpServer);
+// const httpServer = http.createServer(server);
+// createSocketServer(httpServer);
 
 const whitelist = ["http://localhost:3000","http://localhost:3000/login","http://localhost:3000/","https://thelama.netlify.app/"]
 const corsOptions = {
@@ -60,8 +60,8 @@ server.use("/posts", authorize, postsRouter);
 server.use("/comments", authorize, commentsRouter);
 server.use("/like", authorize, likeRouter);
 server.use("/commentLike", authorize, commentLikeRouter);
-server.use("/messages",authorize, messageRouter);
-server.use("/rooms",authorize, roomRouter)
+//server.use("/messages",authorize, messageRouter);
+//server.use("/rooms",authorize, roomRouter)
 
 server.use(badRequestHandler);
 server.use(forbiddenHandler);
@@ -77,7 +77,7 @@ mongoose
     useCreateIndex: true,
   })
   .then(
-    httpServer.listen(port, () => {
+    server.listen(port, () => {
       console.log("Running on port", port);
     })
   )
