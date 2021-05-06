@@ -37,7 +37,7 @@ userRouter.post("/places",authorize,async (req, res, next) => {
       const data = await places.json()
       res.send(data)
     }
-  } catch (error) {
+  } catch (error) { 
     next(error)
   }
 })

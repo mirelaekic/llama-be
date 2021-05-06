@@ -1,9 +1,10 @@
+
 const express = require("express");
 const cors = require("cors");
 const { join } = require("path");
 const listEndpoints = require("express-list-endpoints");
 const mongoose = require("mongoose");
-//const http = require("http");
+const http = require("http");
 const passport = require("passport")
 const cookieParser = require("cookie-parser");
 
@@ -15,8 +16,7 @@ const postsRouter = require("./services/posts");
 const commentsRouter = require("./services/comments");
 const likeRouter = require("./services/likes");
 const commentLikeRouter = require("./services/commentLike");
-//const messageRouter = require("./services/messages");
-//const roomRouter = require("./services/rooms")
+const messageRouter = require("./services/messages");
 
 require("dotenv/config");
 
@@ -29,30 +29,26 @@ const {
 
 //const createSocketServer = require("./socket");
 const server = express();
-// const httpServer = http.createServer(server);
-// createSocketServer(httpServer);
-server.set("trust proxy", 1);
-server.enable("trust proxy");
-// server.use(
-//   cors({
-//     origin: [
-//       `${process.env.FE_URL}`,
-//       "http://localhost:3000/",
-//     ],
-//     exposedHeaders: ["set-cookie"],
-//   }) 
-// );
+//const httpServer = http.createServer(server);
+//createSocketServer(httpServer);
+
+const whitelist = ["http://localhost:3000","https://llamafe-2-mirelaekic.vercel.app/","http://localhost:3000/login","http://localhost:3000/","http://localhost:3002"]
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true)
+    } else {
+         callback(new Error("Not allowed by CORS"))
+        }
+   },
+   credentials: true,
+  }
+  
+server.use(cors(corsOptions));
 
 const port = process.env.PORT;
 const staticFolderPath = join(__dirname, "../public");
-const whiteList = [process.env.FE_URL,"https://llamafe-2.vercel.app/","https://llamafe-2.vercel.app", "http://localhost:3000"];
-server.use(
-  cors({
-    origin: whiteList,
-    credentials: true,
-    exposedHeaders: ["set-cookie"],
-  })
-);
+
 server.use(express.static(staticFolderPath));
 server.use(express.json());
 server.use(cookieParser());
@@ -64,8 +60,7 @@ server.use("/posts", authorize, postsRouter);
 server.use("/comments", authorize, commentsRouter);
 server.use("/like", authorize, likeRouter);
 server.use("/commentLike", authorize, commentLikeRouter);
-//server.use("/messages",authorize, messageRouter);
-//server.use("/rooms",authorize, roomRouter)
+//server.use("/messages", messageRouter);
 
 server.use(badRequestHandler);
 server.use(forbiddenHandler);
